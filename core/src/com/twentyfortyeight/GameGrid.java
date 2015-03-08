@@ -2,186 +2,21 @@ package com.twentyfortyeight;
 
 import java.util.Random;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Matrix4;
+public class GameGrid {
 
-public class TwentyFortyEight extends ApplicationAdapter {
-
-	// rendering/drawing
-	ShapeRenderer shape;
-	SpriteBatch batch;
-
-	// font/text
-	FreeTypeFontGenerator generator;
-	FreeTypeFontParameter parameter;
-	BitmapFont fontPressStart;
 	
-	GameGrid grid;
+	Random rng;	
+	int[][] grid; // stores the numbers
+	boolean[][] hasCombined; // stores whether a cell has been combined
+	boolean[][] newCell;
 	
-	int gridSize; //how any cells in grid
-	int gridSpacing; //grid rendering spacing
-
-	int fontSize; //size to render font
-
-	@Override
-	public void create() {
-
-		// grid layout
-		fontSize = 60;
-		
-		gridSize = 4; // how many cells
-		gridSpacing = fontSize * 2; // space between cells
-		
-
-		// graphics
-		shape = new ShapeRenderer();
-		batch = new SpriteBatch();
-
-		// font
-		generator = new FreeTypeFontGenerator(Gdx.files.internal("PressStart2P.ttf"));
-		parameter = new FreeTypeFontParameter();
-		parameter.size = fontSize;
-		fontPressStart = generator.generateFont(parameter);
-		generator.dispose();
-
-		
-		grid = new GameGrid(gridSize);
-
+	public GameGrid(int size) {
+		rng = new Random();
+		initializeGame(size);
 	}
-
-	@Override
-	public void render() {
-		// clear screen with white
-		Gdx.gl.glClearColor(0.75f, 0.75f, 0.75f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		
-		//adjust projection matrix to fix rendering on resize TODO: only needs to be called on resize
-		Matrix4 matrix = new Matrix4();
-		matrix.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		shape.setProjectionMatrix(matrix);
-		batch.setProjectionMatrix(matrix);
-		
-		
-		int gridSpacingX = Gdx.graphics.getWidth() / (grid.getSize() + 1);
-		int gridSpacingY = Gdx.graphics.getHeight() / (grid.getSize()  + 1);
-		
-
-		shape.begin(ShapeType.Line);
-			
-		//System.out.println(grid.length + ", " + gridSpacingX + ": " + Gdx.graphics.getWidth());
-		
-		for (int x = 0; x < grid.getSize(); ++x) {
-			for (int y = 0; y < grid.getSize(); ++y) {
-				
-				int posX = (x + 1) * gridSpacingX;
-				int posY = (y + 1) * gridSpacingY;
-				int boxSize = 64;
-				
-				shape.setColor(1, 0, 0, 1); //red
-				//horizontal center marker
-				//shape.line(posX - boxSize, posY, posX + boxSize, posY);
-				//vertical center market
-				//shape.line(posX, posY - boxSize, posX, posY + boxSize);
-				
-				shape.setColor(1, 1, 1, 1); //white
-				//shape.circle(posX, posY, boxSize);//temp
-				shape.rect(posX-boxSize/2, posY-boxSize/2, boxSize, boxSize);
-			}
-			
-		}
-		
-		
-		shape.end();
-
-				
-		batch.begin();
-		
-		// render cell values
-		for (int x = 0; x < grid.getSize(); ++x) {
-			for (int y = 0; y < grid.getSize(); ++y) {
-
-				//separate colors for new cells, empty cells and regular cells
-				if (grid.IsCellNew(x, y)) {
-					fontPressStart.setColor(0.3f, 0.3f, 0.6f, 1);
-				} else if (grid.getCell(x, y) == 0) {
-					fontPressStart.setColor(0.3f, 0.3f, 0.3f, 1);
-				} else {
-					fontPressStart.setColor(0.2f, 0.7f, 0.7f, 1);
-				}
-				
-				int posX = (x + 1) * gridSpacingX;
-				int posY = (y + 1) * gridSpacingY;
-				posX -= (fontSize * String.valueOf(grid.getCell(x, y)).length()) / 2;
-				posY += fontSize / 2;
-				fontPressStart.draw(batch, Integer.toString(grid.getCell(x, y)), posX, posY);
-			}
-			
-		}
-		
-		batch.end();
-
-		// TODO
-		// check if can move before moving
-		// check if no moves can be made = game over
-
-		// controls
-		handleInput();
-
-	}
-
-
-	private void handleInput() {
-		// move up
-		if (Gdx.input.isKeyJustPressed(Keys.W) || Gdx.input.isKeyJustPressed(Keys.UP)) {
-			grid.moveDown();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
-		}
-
-		// move down
-		if (Gdx.input.isKeyJustPressed(Keys.S) || Gdx.input.isKeyJustPressed(Keys.DOWN)) {
-			grid.moveUp();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
-		}
-
-		// move left
-		if (Gdx.input.isKeyJustPressed(Keys.A) || Gdx.input.isKeyJustPressed(Keys.LEFT)) {
-			grid.moveLeft();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
-		}
-
-		// move right
-		if (Gdx.input.isKeyJustPressed(Keys.D) || Gdx.input.isKeyJustPressed(Keys.RIGHT)) {
-			grid.moveRight();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
-		}
-
-		// restart game
-		if (Gdx.input.isKeyJustPressed(Keys.R)) {
-			grid.initializeGame(gridSize);
-		}
-
-		// terminate
-		if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
-			Gdx.app.exit();
-		}
-	}
-
-	/** Initialize game. Place 2 instances of 2 anywhere on the board. *//*
-	private void initializeGame(int gridSize) {
+	
+	/** Initialize game. Place 2 instances of 2 anywhere on the board. */
+	public void initializeGame(int gridSize) {
 		// clear grid
 		resetGrid(gridSize);
 		resetMoved(gridSize);
@@ -189,21 +24,33 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		// generate two new cells at beginning of game
 		generateNextCell();
 		generateNextCell();
-	}*/
+	}
+	
+	public int getSize() {
+		return grid.length;
+	}
+	
+	public boolean IsCellNew(int x, int y) {
+		return newCell[x][y];
+	}
 
-	/** Reset grid. *//*
+	public int getCell(int x, int y) {
+		return grid[x][y];
+	}
+	
+	/** Reset grid. */
 	private void resetGrid(int gridSize) {
 		grid = new int[gridSize][gridSize];
 	}
-*/
-	/** Reset moved(consumable) flags. *//*
+
+	/** Reset moved(consumable) flags. */
 	public void resetMoved(int gridSize) {
 		hasCombined = new boolean[gridSize][gridSize];
 		newCell = new boolean[gridSize][gridSize];
 	}
-*/
-	/** Check if there are any free cells. *//*
-	public boolean isGridFull() {
+
+	/** Check if there are any free cells. */
+	private boolean isGridFull() {
 		for (int x = 0; x < grid.length; x++) {
 			for (int y = 0; y < grid.length; y++) {
 				if (grid[x][y] == 0)
@@ -212,8 +59,8 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		}
 		return true;
 	}
-*/
-	/** Generates a new value and sets it in an empty cell. *//*
+
+	/** Generates a new value and sets it in an empty cell. */
 	public void generateNextCell() {
 		if (!isGridFull()) {
 			int newX, newY;
@@ -226,9 +73,9 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			newCell[newX][newY] = true;
 		}
 	}
-*/
-	/** Move all cells right and combined equal cells. *//*
-	private void moveRight() {
+
+	/** Move all cells right and combined equal cells. */
+	public void moveRight() {
 
 		// ------ MOVE GRID RIGHT --------
 		// 0 | 0 | 0 | 0 <--start 1st row, work down
@@ -291,9 +138,9 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		}
 
 	}
-*/
-	/** Move all cells down and combined equal cells. *//*
-	private void moveDown() {
+
+	/** Move all cells down and combined equal cells. */
+	public void moveDown() {
 
 		// ------ MOVE GRID DOWN --------
 		// 0 | 0 | 0 | 0
@@ -355,9 +202,9 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			}
 		}
 	}
-*/
-	/** Move all cells up and combined equal cells. *//*
-	private void moveUp() {
+
+	/** Move all cells up and combined equal cells. */
+	public void moveUp() {
 
 		// ------ MOVE GRID UP --------
 		// 0 | 0 | 0 | 0
@@ -419,9 +266,9 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			}
 		}
 	}
-*/
-	/** Move all cells left and combined equal cells. *//*
-	private void moveLeft() {
+
+	/** Move all cells left and combined equal cells. */
+	public void moveLeft() {
 
 		// ------ MOVE GRID LEFT --------
 		// 0 | 0 | 0 | 0 <--start this row, work down
@@ -483,5 +330,5 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			}
 		}
 	}
-*/
+
 }
