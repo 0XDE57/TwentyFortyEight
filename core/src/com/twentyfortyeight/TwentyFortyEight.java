@@ -5,7 +5,6 @@ import java.util.Random;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Matrix4;
 
 public class TwentyFortyEight extends ApplicationAdapter {
 
@@ -42,8 +42,8 @@ public class TwentyFortyEight extends ApplicationAdapter {
 	public void create() {
 
 		// grid layout
-		fontSize = 60;
-		gridSize = 8; // how many cells
+		fontSize = 80;
+		gridSize = 6; // how many cells
 		gridSpacing = fontSize * 2; // space between cells
 
 		// TODO adjust spacing, center
@@ -74,24 +74,83 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		
+		//adjust projection matrix to fix rendering on resize TODO: only needs to be called on resize
+		Matrix4 matrix = new Matrix4();
+		matrix.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		shape.setProjectionMatrix(matrix);
+		batch.setProjectionMatrix(matrix);
 		
-		//test shape-----------------
+		
+		int gridSpacingX = Gdx.graphics.getWidth() / (grid.length + 1);
+		int gridSpacingY = Gdx.graphics.getHeight() / (grid.length + 1);
+		
+
 		shape.begin(ShapeType.Line);
+		/*
 		shape.setColor(0.3f, 0.3f, 0.3f, 1);
 		for (int x = 0; x < grid.length; x++) {
 			for (int y = 0; y < grid.length; y++) {
 				int xPos = ((gridPosX + (x * gridSpacing)) - String.valueOf(grid[x][y]).length() * 20); // center
 				int yPos = gridPosY - (y * gridSpacing);
 				int padding = 5;
+				shape.circle(xPos, yPos, 5);
 				shape.box(xPos-padding, yPos-fontSize+padding, 0, fontSize+padding, fontSize+padding, 0);
 			}
+		}*/
+		
+		
+		
+		//System.out.println(grid.length + ", " + gridSpacingX + ": " + Gdx.graphics.getWidth());
+		
+		for (int x = 0; x < grid.length; ++x) {
+			for (int y = 0; y < grid.length; ++y) {
+				
+				int posX = (x + 1) * gridSpacingX;
+				int posY = (y + 1) * gridSpacingY;
+				int boxSize = 64;
+				
+				shape.setColor(1, 0, 0, 1); //red
+				//horizontal center marker
+				shape.line(posX - boxSize, posY, posX + boxSize, posY);
+				//vertical center market
+				shape.line(posX, posY - boxSize, posX, posY + boxSize);
+				
+				shape.setColor(1, 1, 1, 1); //white
+				//shape.circle(posX, posY, boxSize);//temp
+				shape.rect(posX-boxSize/2, posY-boxSize/2, boxSize, boxSize);
+			}
+			
 		}
+		
+		
 		shape.end();
 
 		
 		
 		batch.begin();
+		
 		// render cell values
+		for (int x = 0; x < grid.length; ++x) {
+			for (int y = 0; y < grid.length; ++y) {
+
+				//separate colors for new cells, empty cells and regular cells
+				if (newCell[x][y]) {
+					fontPressStart.setColor(0.3f, 0.3f, 0.6f, 1);
+				} else if (grid[x][y] == 0) {
+					fontPressStart.setColor(0.3f, 0.3f, 0.3f, 1);
+				} else {
+					fontPressStart.setColor(0.2f, 0.7f, 0.7f, 1);
+				}
+				
+				int posX = (x + 1) * gridSpacingX;
+				int posY = (y + 1) * gridSpacingY;
+				posX -= (fontSize * String.valueOf(grid[x][y]).length()) / 2;
+				posY += fontSize / 2;
+				fontPressStart.draw(batch, Integer.toString(grid[x][y]), posX, posY);
+			}
+			
+		}
+		/*
 		for (int x = 0; x < grid.length; x++) {
 			for (int y = 0; y < grid.length; y++) {
 				int xPos = ((gridPosX + (x * gridSpacing)) - String.valueOf(grid[x][y]).length() * 20); // center
@@ -109,7 +168,7 @@ public class TwentyFortyEight extends ApplicationAdapter {
 				fontPressStart.draw(batch, Integer.toString(grid[x][y]), xPos, yPos);
 			}
 
-		}
+		}*/
 		batch.end();
 
 		// TODO
@@ -121,17 +180,18 @@ public class TwentyFortyEight extends ApplicationAdapter {
 
 	}
 
+
 	private void handleInput() {
 		// move up
 		if (Gdx.input.isKeyJustPressed(Keys.W) || Gdx.input.isKeyJustPressed(Keys.UP)) {
-			moveUp();
+			moveDown();
 			resetMoved(gridSize);
 			generateNextCell();
 		}
 
 		// move down
 		if (Gdx.input.isKeyJustPressed(Keys.S) || Gdx.input.isKeyJustPressed(Keys.DOWN)) {
-			moveDown();
+			moveUp();
 			resetMoved(gridSize);
 			generateNextCell();
 		}
