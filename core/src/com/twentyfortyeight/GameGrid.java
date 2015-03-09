@@ -4,11 +4,14 @@ import java.util.Random;
 
 public class GameGrid {
 
+	// TODO
+	// check if can move before moving
+	// check if no moves can be made = game over
 	
-	Random rng;	
+	Random rng;	// generate next cell
 	int[][] grid; // stores the numbers
 	boolean[][] hasCombined; // stores whether a cell has been combined
-	boolean[][] newCell;
+	boolean[][] newCell; // marks whether a cell is new or not
 	
 	public GameGrid(int size) {
 		rng = new Random();
@@ -50,7 +53,7 @@ public class GameGrid {
 	}
 
 	/** Check if there are any free cells. */
-	private boolean isGridFull() {
+	public boolean isGridFull() {
 		for (int x = 0; x < grid.length; x++) {
 			for (int y = 0; y < grid.length; y++) {
 				if (grid[x][y] == 0)
@@ -72,6 +75,91 @@ public class GameGrid {
 			grid[newX][newY] = rng.nextBoolean() ? 2 : 4;
 			newCell[newX][newY] = true;
 		}
+	}
+	
+	public boolean canMoveUp() {
+		for (int gridX = 0; gridX < grid.length; gridX++) {
+			for (int gridY = 1; gridY < grid.length; gridY++) {
+
+				// skip empty cells
+				if (grid[gridX][gridY] == 0) {
+					continue;
+				}
+
+				if (grid[gridX][gridY - 1] == 0) {
+		
+					return true;
+
+				} else if (grid[gridX][gridY - 1] == grid[gridX][gridY]
+						&& !hasCombined[gridX][gridY - 1] && !hasCombined[gridX][gridY]) {
+
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean canMoveDown() {
+		for (int gridX = 0; gridX < grid.length; gridX++) {
+			for (int gridY = grid.length - 2; gridY >= 0; gridY--) {
+			
+				// skip empty cells
+				if (grid[gridX][gridY] == 0) {
+					continue;
+				}
+
+				if (grid[gridX][gridY + 1] == 0) {
+					return true;			
+				} else if (grid[gridX][gridY + 1] == grid[gridX][gridY]
+						&& !hasCombined[gridX][gridY + 1] && !hasCombined[gridX][gridY]) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean canMoveRight() {
+		for (int gridY = 0; gridY < grid.length; gridY++) {
+			for (int gridX = grid.length - 2; gridX >= 0; gridX--) {
+		
+				// skip empty cells
+				if (grid[gridX][gridY] == 0) {
+					continue;
+				}
+
+				if (grid[gridX + 1][gridY] == 0) {
+					return true;
+
+				} else if (grid[gridX + 1][gridY] == grid[gridX][gridY]
+						&& !hasCombined[gridX + 1][gridY] && !hasCombined[gridX][gridY]) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean canMoveLeft() {
+		for (int gridY = 0; gridY < grid.length; gridY++) {
+			for (int gridX = 1; gridX < grid.length; gridX++) {
+				
+				// skip empty cells
+				if (grid[gridX][gridY] == 0) {
+					continue;
+				}
+
+				if (grid[gridX - 1][gridY] == 0) {
+					return true;
+
+				} else if (grid[gridX - 1][gridY] == grid[gridX][gridY]
+						&& !hasCombined[gridX - 1][gridY] && !hasCombined[gridX][gridY]) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/** Move all cells right and combined equal cells. */

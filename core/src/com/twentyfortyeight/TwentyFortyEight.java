@@ -130,10 +130,6 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		
 		batch.end();
 
-		// TODO
-		// check if can move before moving
-		// check if no moves can be made = game over
-
 		// controls
 		handleInput();
 
@@ -141,32 +137,52 @@ public class TwentyFortyEight extends ApplicationAdapter {
 
 
 	private void handleInput() {
+		boolean hasMoved = false;
+		
 		// move up
 		if (Gdx.input.isKeyJustPressed(Keys.W) || Gdx.input.isKeyJustPressed(Keys.UP)) {
-			grid.moveDown();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
+			if (grid.canMoveDown()) {
+				grid.moveDown();
+				hasMoved = true;				
+			}
+			
 		}
 
 		// move down
 		if (Gdx.input.isKeyJustPressed(Keys.S) || Gdx.input.isKeyJustPressed(Keys.DOWN)) {
-			grid.moveUp();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
+			if (grid.canMoveUp()) {
+				grid.moveUp();
+				hasMoved = true;
+			}		
 		}
 
 		// move left
 		if (Gdx.input.isKeyJustPressed(Keys.A) || Gdx.input.isKeyJustPressed(Keys.LEFT)) {
-			grid.moveLeft();
-			grid.resetMoved(gridSize);
-			grid.generateNextCell();
+			if (grid.canMoveLeft()) {
+				grid.moveLeft();
+				hasMoved = true;
+			}
+			
 		}
 
 		// move right
 		if (Gdx.input.isKeyJustPressed(Keys.D) || Gdx.input.isKeyJustPressed(Keys.RIGHT)) {
-			grid.moveRight();
+			if (grid.canMoveRight()) {
+				grid.moveRight();
+				hasMoved = true;
+			}
+		}
+		
+		if (hasMoved) {
 			grid.resetMoved(gridSize);
 			grid.generateNextCell();
+			hasMoved = false;
+			if (grid.isGridFull()) {
+				if (!grid.canMoveDown() && !grid.canMoveUp() && !grid.canMoveLeft() && !grid.canMoveRight()) {
+					System.out.println("You loose bitch. Press R to restart." );
+				}
+				
+			}
 		}
 
 		// restart game
