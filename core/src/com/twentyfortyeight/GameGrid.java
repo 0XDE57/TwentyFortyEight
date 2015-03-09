@@ -3,18 +3,13 @@ package com.twentyfortyeight;
 import java.util.Random;
 
 public class GameGrid {
-
-	// TODO
-	// check if can move before moving
-	// check if no moves can be made = game over
 	
-	Random rng;	// generate next cell
 	int[][] grid; // stores the numbers
 	boolean[][] hasCombined; // stores whether a cell has been combined
 	boolean[][] newCell; // marks whether a cell is new or not
 	
 	public GameGrid(int size) {
-		rng = new Random();
+		
 		initializeGame(size);
 	}
 	
@@ -65,6 +60,7 @@ public class GameGrid {
 
 	/** Generates a new value and sets it in an empty cell. */
 	public void generateNextCell() {
+		Random rng = new Random();
 		if (!isGridFull()) {
 			int newX, newY;
 			do {
@@ -73,6 +69,7 @@ public class GameGrid {
 			} while (grid[newX][newY] != 0);
 			// make sure position is free, generate 2 or 4
 			grid[newX][newY] = rng.nextBoolean() ? 2 : 4;
+			//grid[newX][newY] = rng.nextBoolean() ? 3 : 6;
 			newCell[newX][newY] = true;
 		}
 	}
