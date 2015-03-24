@@ -187,15 +187,14 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			if (grid.isGridFull()) {
 				if (!grid.canMoveDown() && !grid.canMoveUp() && !grid.canMoveLeft() && !grid.canMoveRight()) {
 					showLoseMessage = true;
-					//System.out.println("You loose bitch. Press R to restart." );
-				}
-				
+				}			
 			}
 		}
 
 		// restart game
 		if (Gdx.input.isKeyJustPressed(Keys.R)) {
 			grid.initializeGame(grid.getSize());
+			showLoseMessage = false;
 		}
 
 		// terminate
