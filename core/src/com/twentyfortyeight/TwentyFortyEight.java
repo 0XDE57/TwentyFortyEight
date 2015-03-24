@@ -30,20 +30,15 @@ public class TwentyFortyEight extends ApplicationAdapter {
 	int fontSize; //size to render font
 	
 	//animation/message
-	boolean showLoseMessage = false;
+	boolean lose = false;
 
 	@Override
 	public void create() {
-
 		int gridSize = 4; // how many cells
 		grid = new GameGrid(gridSize);
 		
 		// grid layout
 		fontSize = 60;
-		
-		
-		//gridSpacing = fontSize * 2; // space between cells
-		
 
 		// graphics
 		shape = new ShapeRenderer();
@@ -55,9 +50,6 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		parameter.size = fontSize;
 		fontPressStart = generator.generateFont(parameter);
 		generator.dispose();
-
-		
-		
 
 	}
 
@@ -74,52 +66,48 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		shape.setProjectionMatrix(matrix);
 		batch.setProjectionMatrix(matrix);
 		
-		
+		//calculate spacing in between cells
 		int gridSpacingX = Gdx.graphics.getWidth() / (grid.getSize() + 1);
 		int gridSpacingY = Gdx.graphics.getHeight() / (grid.getSize()  + 1);
 		
 
-		shape.begin(ShapeType.Line);
-		
+		shape.begin(ShapeType.Filled);
+		//draw boxes to represent grid spaces/positions
 		for (int x = 0; x < grid.getSize(); ++x) {
 			for (int y = 0; y < grid.getSize(); ++y) {
-				
+				//calculate position
 				int posX = (x + 1) * gridSpacingX;
 				int posY = (y + 1) * gridSpacingY;
-				int boxSize = (int) (fontSize * 1.5);
+				int boxSize = (int) (fontSize * 2);
 				
-				shape.setColor(1, 0, 0, 1); //red
-				//horizontal center marker
-				shape.line(posX - boxSize/4, posY, posX + boxSize/4, posY);
-				//vertical center market
-				shape.line(posX, posY - boxSize/4, posX, posY + boxSize/4);
-				
-				shape.setColor(1, 1, 1, 1); //white
-				//shape.circle(posX, posY, boxSize);//temp
+				shape.setColor(0.7f, 0.7f, 0.7f, 1);
 				shape.rect(posX-boxSize/2, posY-boxSize/2, boxSize, boxSize);
+				
+				//center marker for debug
+				//shape.setColor(1, 0, 0, 1); //red
+				//shape.line(posX - boxSize/4, posY, posX + boxSize/4, posY);
+				//shape.line(posX, posY - boxSize/4, posX, posY + boxSize/4);
 			}
-			
 		}
-		
-		
 		shape.end();
 
 				
-		batch.begin();
-		
+		batch.begin();		
 		// render cell values
 		for (int x = 0; x < grid.getSize(); ++x) {
 			for (int y = 0; y < grid.getSize(); ++y) {
-
-				//separate colors for new cells, empty cells and regular cells
-				if (grid.IsCellNew(x, y)) {
-					fontPressStart.setColor(0.3f, 0.3f, 0.6f, 1);
-				} else if (grid.getCell(x, y) == 0) {
-					fontPressStart.setColor(0.3f, 0.3f, 0.3f, 1);
-				} else {
-					fontPressStart.setColor(0.2f, 0.7f, 0.7f, 1);
+				if (grid.getCell(x, y) == 0) {
+					continue; //don't render empty cells
 				}
 				
+				//separate colors for new cells and regular cells for visual aid until animation is implemented
+				if (grid.IsCellNew(x, y)) {
+					fontPressStart.setColor(0.3f, 0.3f, 0.6f, 1);
+				} else {
+					fontPressStart.setColor(0.5f, 0.3f, 0.5f, 1);
+				}
+				
+				//calculate position and draw value
 				int posX = (x + 1) * gridSpacingX;
 				int posY = (y + 1) * gridSpacingY;
 				posX -= (fontSize * String.valueOf(grid.getCell(x, y)).length()) / 2;
@@ -127,7 +115,7 @@ public class TwentyFortyEight extends ApplicationAdapter {
 				fontPressStart.draw(batch, Integer.toString(grid.getCell(x, y)), posX, posY);
 			}
 			
-			if (showLoseMessage) {
+			if (lose) {
 				fontPressStart.setColor(1, 0.2f, 0.2f, 1);
 				fontPressStart.draw(batch, "Game Over", Gdx.graphics.getWidth()/8, Gdx.graphics.getHeight()/2);
 				fontPressStart.draw(batch, "Press 'R'", Gdx.graphics.getWidth()/8, Gdx.graphics.getHeight()/2 - fontSize);
@@ -186,7 +174,7 @@ public class TwentyFortyEight extends ApplicationAdapter {
 			hasMoved = false;
 			if (grid.isGridFull()) {
 				if (!grid.canMoveDown() && !grid.canMoveUp() && !grid.canMoveLeft() && !grid.canMoveRight()) {
-					showLoseMessage = true;
+					lose = true;
 				}			
 			}
 		}
@@ -194,7 +182,7 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		// restart game
 		if (Gdx.input.isKeyJustPressed(Keys.R)) {
 			grid.initializeGame(grid.getSize());
-			showLoseMessage = false;
+			lose = false;
 		}
 
 		// terminate
