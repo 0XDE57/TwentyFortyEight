@@ -67,17 +67,20 @@ public class TwentyFortyEight extends ApplicationAdapter {
 		batch.setProjectionMatrix(matrix);
 		
 		//calculate spacing in between cells
-		int gridSpacingX = Gdx.graphics.getWidth() / (grid.getSize() + 1);
-		int gridSpacingY = Gdx.graphics.getHeight() / (grid.getSize()  + 1);
-		
+		int gridSpacing;
+		if (Gdx.graphics.getWidth() > Gdx.graphics.getHeight()) {
+			gridSpacing = Gdx.graphics.getHeight() / (grid.getSize()  + 1);
+		} else {
+			gridSpacing = Gdx.graphics.getWidth() / (grid.getSize() + 1);
+		}
 
 		shape.begin(ShapeType.Filled);
 		//draw boxes to represent grid spaces/positions
 		for (int x = 0; x < grid.getSize(); ++x) {
 			for (int y = 0; y < grid.getSize(); ++y) {
 				//calculate position
-				int posX = (x + 1) * gridSpacingX;
-				int posY = (y + 1) * gridSpacingY;
+				int posX = (x + 1) * gridSpacing;
+				int posY = (y + 1) * gridSpacing;
 				int boxSize = (int) (fontSize * 2);
 				
 				shape.setColor(0.7f, 0.7f, 0.7f, 1);
@@ -108,8 +111,8 @@ public class TwentyFortyEight extends ApplicationAdapter {
 				}
 				
 				//calculate position and draw value
-				int posX = (x + 1) * gridSpacingX;
-				int posY = (y + 1) * gridSpacingY;
+				int posX = (x + 1) * gridSpacing;
+				int posY = (y + 1) * gridSpacing;
 				posX -= (fontSize * String.valueOf(grid.getCell(x, y)).length()) / 2;
 				posY += fontSize / 2;
 				fontPressStart.draw(batch, Integer.toString(grid.getCell(x, y)), posX, posY);
